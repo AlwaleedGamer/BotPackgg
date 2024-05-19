@@ -1,39 +1,38 @@
-const { Hercai } = require('hercai');
-const herc = new Hercai();
+const axios = require('axios');
+const moment = require('moment-timezone');
 
 module.exports.config = {
   name: 'ai',
-  version: '1.1.0',
-  hasPermssion: 0,
-  credits: 'Yan Maglinte | Liane Cagara',
-  description: 'An AI command using Hercai API!',
+  version: '1.0.0',
+  role: 0,
   usePrefix: false,
-  allowPrefix: true,
-  commandCategory: 'chatbots',
-  usages: 'Ai [prompt]',
-  cooldowns: 5,
+  commandCategory: "ai",
+  aliases: ['snow', 'ai'],
+  description: "An AI command powered by Snowflakes AI",
+  usage: "snowflakes [prompt]",
+  credits: 'churchill,modified by joshua apostol',
+  cooldown: 3,
 };
 
-module.exports.run = async function ({ api, event, args, box }) {
-  const prompt = args.join(' ');
-  if (!box) {
-    return api.sendMessage(`Unsupported.`, event.threadID);
+module.exports.run = async function({ api, event, args }) {
+  const input = args.join(' ');
+  const timeString = moment.tz('Asia/Manila').format('LLL');
+
+  if (!input) {
+    api.sendMessage(`𝗥⃪𝗘⃪𝗦⃪𝗣⃪𝗢⃪𝗡⃪𝗗⃪ 𝗔⃪𝗜⃪\n\nPlease provide a question/query.`, event.threadID, event.messageID);
+    return;
   }
 
+  api.sendMessage(`🔍Searching for Snowflakes AI response....`, event.threadID, event.messageID);
+
   try {
-    // Available Models: "v3", "v3-32k", "turbo", "turbo-16k", "gemini"
-    if (!prompt) {
-      box.reply('Please specify a message!');
-      box.react('❓');
+    const { data } = await axios.get(`https://hashier-api-snowflake.vercel.app/api/snowflake?ask=${encodeURIComponent(input)}`);
+    if (data.response) {
+      api.sendMessage(`𝗥⃪𝗘⃪𝗦⃪𝗣⃪𝗢⃪𝗡⃪𝗗⃪ 𝗔⃪𝗜⃪\n━━━━━━━━━━━━━━━\n\n${data.response}\n\n${timeString}`, event.threadID, event.messageID);
     } else {
-      const info = await box.reply(`Fetching answer...`);
-      box.react('⏱️');
-      const response = await herc.question({ model: 'v3', content: prompt });
-      await box.edit(response.reply, info.messageID);
-      box.react('');
+      api.sendMessage('No response found.', event.threadID, event.messageID);
     }
   } catch (error) {
-    box.reply('⚠️ Something went wrong: ' + error);
-    box.react('⚠️');
+    api.sendMessage('An error occurred while processing your request.', event.threadID, event.messageID);
   }
 };
