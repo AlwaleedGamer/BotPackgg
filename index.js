@@ -13,7 +13,7 @@ try {
   configJson = require("./config.json");
 } catch (error) {
   console.error("Error loading config.json:", error);
-  process.exit(1); // Exit the script with an error code
+  process.exit(10); // Exit the script with an error code
 }
 
 const delayedLog = async (message) => {
